@@ -1,22 +1,40 @@
-const {Pool} = require('pg')
+const {Client} = require('pg');
 
-const pool = new Pool({
+const client = new Client({
     user: 'postgres',
+    host: 'localhost',
+    database:  'projeto_bd',
     password: '1',
-    database: 'projeto_bd'
-});
+    port:5432,
+  })
 
-module.exports = {p:p};
-
-function p() {
-    return 'Funciona' + 1;
+module.exports = {
+    select_candidatos,
+    select_ficha_limpa
 }
+
+function select_ficha_limpa(){
+    const query = `SELECT * FROM individuo WHERE eh_ficha_limpa(documento) = TRUE`;
+    client.query(query, (err, res) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        console.log(res.rows);
+        client.end();
+    });
+}
+
 
 // *** CANDIDATURA ***
 
 // Seleciona os candidatos de todas as eleicoes
-function select_candidatos(colunas){
-    return "Ainda nao implementado"
+ async function select_candidatos(colunas){
+   try {
+       let resp = await pool.query('SELECT * FROM individuo;')
+   } catch (err) {
+       console.log(resp.rows);
+   }
 }
 
 // Seleciona os candidatos da eleicao em ocorrencia
