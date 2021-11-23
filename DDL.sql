@@ -1,4 +1,4 @@
--- DROP TABLE IF EXISTS individuo CASCADE;
+DROP TABLE IF EXISTS individuo CASCADE;
 
 CREATE TABLE individuo (
 	documento VARCHAR(11), -- Documento do_individuo, nesse caso CPF -- TODO trocar de varchar para char
@@ -16,7 +16,7 @@ CREATE TABLE processo_judicial (
 	doc_reu VARCHAR(11), -- Documento do_individuo associado ao processo 
 	procedencia VARCHAR(12) DEFAULT 'Inocente', -- Inocente ou culpado. Inocente ate que se prove o contrario
 	dt_termino DATE, -- Data do fim do processo
-	situacao VARCHAR(20)-- TODO situacao_processo(dt_termino), -- Tramitacao ou julgados
+	situacao VARCHAR(20), -- Tramitacao ou julgados
 	
 	PRIMARY KEY (codigo),
 	CONSTRAINT fk_name
@@ -45,7 +45,7 @@ $$
 
 SELECT dt_termino, situacao_processo(dt_termino) FROM processo_judicial;
 
--- DROP TABLE IF EXISTS partido CASCADE;
+DROP TABLE IF EXISTS partido CASCADE;
 
 CREATE TABLE partido (
 	nome VARCHAR(30),
@@ -54,7 +54,7 @@ CREATE TABLE partido (
 	PRIMARY KEY (nome)
 );
 
--- DROP TABLE IF EXISTS cargo CASCADE;
+DROP TABLE IF EXISTS cargo CASCADE;
 
 CREATE TABLE cargo(
 	codigo SERIAL,
@@ -104,7 +104,7 @@ CREATE TABLE equipe_de_apoio(
 			REFERENCES candidatura(doc_candidato, ano_eleicao)
 );
 
--- DROP TABLE doacao_pf CASCADE;
+DROP TABLE doacao_pf CASCADE;
 
 CREATE TABLE doacao_pf(
 	doc_candidato CHAR(11),
@@ -150,11 +150,7 @@ BEGIN -- Conta o numero de processos que qualificam uma pessoa como nao ficha li
 END;
 $$
 
-SELECT * FROM individuo WHERE eh_ficha_limpa(documento) = FALSE ;
 INSERT INTO processo_judicial(doc_reu, procedencia, dt_termino) VALUES ('2', 'Culpado(a)', '2017-03-03');
-
-
-
 
 INSERT INTO doacao_pf VALUES(1, 2, '2020', 500.25);
 INSERT INTO doacao_pf VALUES(1, 2, '2020', 500.25);
