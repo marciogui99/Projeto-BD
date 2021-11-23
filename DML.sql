@@ -12,7 +12,7 @@ INSERT INTO processo_judicial(doc_reu, procedencia, dt_termino) VALUES ('1', 'Cu
 INSERT INTO processo_judicial(doc_reu, procedencia, dt_termino) VALUES ('1', 'Culpado(a)', '2001-03-04');
 INSERT INTO processo_judicial(doc_reu) VALUES ('2');
 -- TODO Criar rotina para impedir que processos sem data de termino sejam culpados
-SELECT * FROM ProcessoJudicial;
+SELECT * FROM processo_judicial;
 
 INSERT INTO partido VALUES ('PSOL', 'Aalndlandilw awwdiajidoasoid wqidonwqiodnqowid asdioasndioasdnsad asoisadnas') RETURNING *;
 INSERT INTO partido VALUES ('PSC', 'AalndlaQlw awwdiajidoasoid wqidonwqiodnqowid asdioasndioasdnsad asoisadnas') RETURNING *;
