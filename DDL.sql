@@ -1,30 +1,28 @@
--- DROP TABLE IF EXISTS individuo CASCADE;
+
 
 CREATE TABLE individuo (
 	documento VARCHAR(11), -- Documento do_individuo, nesse caso CPF -- TODO trocar de varchar para char
 	nome VARCHAR(100) NOT NULL, -- Nome completo
-	dt_nascimento DATE NOT NULL, 
-	ficha_limpa BOOL DEFAULT TRUE, -- Campo derivado, verifica se um individuo eh culpado de um processo recente
+	dt_nascimento DATE NOT NULL,
 	
 	PRIMARY KEY (documento)
 );
 
-DROP TABLE IF EXISTS processo_judicial;
 
 CREATE TABLE processo_judicial (
 	codigo SERIAL, -- Codigo do_processo
 	doc_reu VARCHAR(11), -- Documento do_individuo associado ao processo 
 	procedencia VARCHAR(12) DEFAULT 'Inocente', -- Inocente ou culpado. Inocente ate que se prove o contrario
 	dt_termino DATE, -- Data do fim do processo
-	situacao VARCHAR(20)-- TODO situacao_processo(dt_termino), -- Tramitacao ou julgados
+	situacao VARCHAR(20), -- Tramitacao ou julgados
 	
 	PRIMARY KEY (codigo),
-	CONSTRAINT fk_name
-		FOREIGN KEY (doc_reu)
-			REFERENCES individuo(documento)
-			ON DELETE CASCADE -- Caso um individuo seja removido da tabela de indivios, seus processos sao apagados
+	CONSTRAINT fk_name FOREIGN KEY (doc_reu)
+		REFERENCES individuo(documento)
+		ON DELETE CASCADE -- Caso um individuo seja removido da tabela de indivios, seus processos sao apagados
 );
 
+-- Verifica se um processo possui data de termino
 CREATE OR REPLACE FUNCTION situacao_processo(dt_termino DATE)
 	RETURNS CHAR
 	LANGUAGE PLPGSQL
@@ -45,8 +43,6 @@ $$
 
 SELECT dt_termino, situacao_processo(dt_termino) FROM processo_judicial;
 
--- DROP TABLE IF EXISTS partido CASCADE;
-
 CREATE TABLE partido (
 	nome VARCHAR(30),
 	programa TEXT NOT NULL,
@@ -54,77 +50,18 @@ CREATE TABLE partido (
 	PRIMARY KEY (nome)
 );
 
--- DROP TABLE IF EXISTS cargo CASCADE;
-
 CREATE TABLE cargo(
 	codigo SERIAL,
 	nome VARCHAR(30), -- Nome do cargo, ex.: Prefeito, Vereador, Deputado Federal
-	cidade VARCHAR(50) DEFAULT 'Brasilia',
-	uf CHAR(2) DEFAULT 'DF',
-	federacao CHAR(2) DEFAULT 'BR',
+	cidade VARCHAR(50),
+	uf CHAR(2),
+	federacao CHAR(2),
 	qtd_eleitos SMALLINT NOT NULL CHECK (qtd_eleitos > 0),
 	categoria VARCHAR(20), -- Municipal, Estadual ou Federal -- TODO Verificar se precisa de CONSTRAINT NOT NULL
 	
 	PRIMARY KEY (codigo),
 	CONSTRAINT cargo_unico UNIQUE(nome,cidade,uf,federacao)
 );
-
-DROP TABLE IF EXISTS candidatura CASCADE;
-
-CREATE TABLE candidatura (
-	doc_candidato CHAR(11),
-	ano_eleicao CHAR(4),
-	cod_cargo SMALLINT,
-	partido VARCHAR(30),
-	doc_vice CHAR(11),
-	pleito INTEGER NOT NULL CHECK (pleito >= 0) DEFAULT 0, -- Numero de votos
-	eleito BOOL DEFAULT NULL, -- Null -> Eleicao ainda nao ocorreu
-	
-	PRIMARY KEY (doc_candidato, ano_eleicao),
-	CONSTRAINT fk_candidatura_individuo
-		FOREIGN KEY (doc_candidato)
-			REFERENCES individuo(documento),
-	CONSTRAINT fk_candidatura_cargo
-		FOREIGN KEY (cod_cargo)
-			REFERENCES cargo(codigo),
-	CONSTRAINT fk_candidatura_partido
-		FOREIGN KEY (partido)
-			REFERENCES partido(nome),
-	CONSTRAINT ficha_limpa CHECK (eh_ficha_limpa(doc_candidato)) -- Verifica se o individui possui ficha limpa
-);
-
-CREATE TABLE equipe_de_apoio(
-	doc_candidato CHAR(11),
-	ano_eleicao CHAR(4),
-	nome_equipe VARCHAR(30) NOT NULL,
-	
-	PRIMARY KEY (doc_candidato, ano_eleicao, nome_equipe),
-	CONSTRAINT fk_doacao_pf_candidatura
-		FOREIGN KEY (doc_candidato, ano_eleicao)
-			REFERENCES candidatura(doc_candidato, ano_eleicao)
-);
-
--- DROP TABLE doacao_pf CASCADE;
-
-CREATE TABLE doacao_pf(
-	doc_candidato CHAR(11),
-	doc_doador CHAR(11),
-	ano_eleicao CHAR(4),
-	valor NUMERIC(6,2) NOT NULL CHECK (valor > 0),
-	
-	CONSTRAINT fk_doacao_pf_candidatura
-		FOREIGN KEY (doc_candidato, ano_eleicao)
-			REFERENCES candidatura(doc_candidato, ano_eleicao),
-	CONSTRAINT fk_doacao_pf_doador
-		FOREIGN KEY (doc_doador)
-			REFERENCES individuo(documento)
-);
-
---CREATE TABLE participante_equipe(
-	--doc_candidato CHAR(11),
-	--ano_eleicao CHAR(4),
-	--nome_equipe VARCHAR(30) NOT NULL,
---);
 
 CREATE OR REPLACE FUNCTION eh_ficha_limpa(doc CHAR)  -- Funcao que verifica se um individuo eh ficha limpa ou nao
 	RETURNS BOOL
@@ -150,14 +87,91 @@ BEGIN -- Conta o numero de processos que qualificam uma pessoa como nao ficha li
 END;
 $$
 
-SELECT * FROM individuo WHERE eh_ficha_limpa(documento) = FALSE ;
-INSERT INTO processo_judicial(doc_reu, procedencia, dt_termino) VALUES ('2', 'Culpado(a)', '2017-03-03');
+CREATE TABLE candidatura (
+	doc_candidato CHAR(11),
+	ano_eleicao CHAR(4),
+	cod_cargo SMALLINT,
+	partido VARCHAR(30),
+	doc_vice CHAR(11),
+	pleito INTEGER NOT NULL CHECK (pleito >= 0) DEFAULT 0, -- Numero de votos
+	eleito BOOL DEFAULT NULL, -- Null -> Eleicao ainda nao ocorreu
+	
+	PRIMARY KEY (doc_candidato, ano_eleicao),
+	CONSTRAINT fk_candidatura_individuo -- Inidividuo
+		FOREIGN KEY (doc_candidato)
+			REFERENCES individuo(documento),
+	CONSTRAINT fk_candidatura_cargo  -- Cargo
+		FOREIGN KEY (cod_cargo)
+			REFERENCES cargo(codigo),
+	CONSTRAINT fk_candidatura_partido -- Partido unico
+		FOREIGN KEY (partido)
+			REFERENCES partido(nome),
+	CONSTRAINT ficha_limpa CHECK (eh_ficha_limpa(doc_candidato)) -- Verifica se o individui possui ficha limpa
+);
 
+CREATE TABLE equipe_de_apoio(
+	doc_candidato CHAR(11),
+	ano_eleicao CHAR(4),
+	nome_equipe VARCHAR(30) NOT NULL,
+	
+	PRIMARY KEY (doc_candidato, ano_eleicao, nome_equipe),
+	CONSTRAINT fk_doacao_pf_candidatura
+		FOREIGN KEY (doc_candidato, ano_eleicao)
+			REFERENCES candidatura(doc_candidato, ano_eleicao)
+);
 
+CREATE TABLE participante_equipe(
+	doc_participante CHAR(11),
+	doc_candidato CHAR(11),
+	ano_eleicao CHAR(4),
+	nome_equipe VARCHAR(30) NOT NULL,
+	
+	PRIMARY KEY (doc_participante, doc_candidato, ano_eleicao),
+	
+);
 
+CREATE TABLE doacao_pf(
+	doc_doador CHAR(11),
+	doc_candidato CHAR(11),
+	ano_eleicao CHAR(4),
+	valor NUMERIC(6,2) NOT NULL CHECK (valor > 0),
+	
+	CONSTRAINT fk_doacao_pf_candidatura
+		FOREIGN KEY (doc_candidato, ano_eleicao)
+			REFERENCES candidatura(doc_candidato, ano_eleicao),
+	CONSTRAINT fk_doacao_pf_doador
+		FOREIGN KEY (doc_doador)
+			REFERENCES individuo(documento)
+);
 
 INSERT INTO doacao_pf VALUES(1, 2, '2020', 500.25);
 INSERT INTO doacao_pf VALUES(1, 2, '2020', 500.25);
 INSERT INTO doacao_pf VALUES(1, 2, '2020', 500.25);
 INSERT INTO doacao_pf VALUES(2, 1, '2020', 500.25);
 SELECT * FROM doacao_pf ;
+
+CREATE TABLE doacao_pj(
+	cnpj_doador CHAR(12),
+	doc_candidato CHAR(11),
+	ano_eleicao CHAR(4),
+	valor NUMERIC(6,2),
+	
+	PRIMARY KEY (cnpj_doador, doc_candidato, ano_eleicao),
+	CONSTRAINT uma_doacao_ano UNIQUE (cnpj_doador, ano_eleicao)
+);
+
+
+INSERT INTO processo_judicial(doc_reu, procedencia, dt_termino) VALUES ('2', 'Culpado(a)', '2017-03-03');
+
+
+
+
+
+
+
+-- DROP TABLE IF EXISTS individuo CASCADE;
+-- DROP TABLE IF EXISTS processo_judicial CASCADE;
+-- DROP TABLE IF EXISTS partido CASCADE;
+-- DROP TABLE IF EXISTS cargo CASCADE;
+-- DROP TABLE IF EXISTS candidatura CASCADE;
+-- DROP TABLE IF EXISTS doacao_pf CASCADE;
