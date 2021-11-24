@@ -122,7 +122,7 @@ CREATE TABLE participante_equipe(
 	ano_eleicao CHAR(4),
 	nome_equipe VARCHAR(30) NOT NULL,
 	
-	PRIMARY KEY (doc_participante, doc_candidato, ano_eleicao),
+	PRIMARY KEY (doc_participante, doc_candidato, ano_eleicao)
 	
 );
 
@@ -139,12 +139,6 @@ CREATE TABLE doacao_pf(
 		FOREIGN KEY (doc_doador)
 			REFERENCES individuo(documento)
 );
-
-INSERT INTO doacao_pf VALUES(1, 2, '2020', 500.25);
-INSERT INTO doacao_pf VALUES(1, 2, '2020', 500.25);
-INSERT INTO doacao_pf VALUES(1, 2, '2020', 500.25);
-INSERT INTO doacao_pf VALUES(2, 1, '2020', 500.25);
-SELECT * FROM doacao_pf ;
 
 CREATE TABLE doacao_pj(
 	cnpj_doador CHAR(12),
