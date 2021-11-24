@@ -1,7 +1,5 @@
-
-
 CREATE TABLE individuo (
-	documento VARCHAR(11), -- Documento do_individuo, nesse caso CPF -- TODO trocar de varchar para char
+	documento VARCHAR(11), -- Documento do_individuo, nesse caso CPF
 	nome VARCHAR(100) NOT NULL, -- Nome completo
 	dt_nascimento DATE NOT NULL,
 	
@@ -14,7 +12,6 @@ CREATE TABLE processo_judicial (
 	doc_reu VARCHAR(11), -- Documento do_individuo associado ao processo 
 	procedencia VARCHAR(12) DEFAULT 'Inocente', -- Inocente ou culpado. Inocente ate que se prove o contrario
 	dt_termino DATE, -- Data do fim do processo
-	situacao VARCHAR(20), -- Tramitacao ou julgados
 	
 	PRIMARY KEY (codigo),
 	CONSTRAINT fk_name FOREIGN KEY (doc_reu)
@@ -41,7 +38,6 @@ BEGIN
 END;
 $$
 
-SELECT dt_termino, situacao_processo(dt_termino) FROM processo_judicial;
 
 CREATE TABLE partido (
 	nome VARCHAR(30),
@@ -57,7 +53,7 @@ CREATE TABLE cargo(
 	uf CHAR(2),
 	federacao CHAR(2),
 	qtd_eleitos SMALLINT NOT NULL CHECK (qtd_eleitos > 0),
-	categoria VARCHAR(20), -- Municipal, Estadual ou Federal -- TODO Verificar se precisa de CONSTRAINT NOT NULL
+	categoria VARCHAR(20), -- Municipal, Estadual ou Federal
 	
 	PRIMARY KEY (codigo),
 	CONSTRAINT cargo_unico UNIQUE(nome,cidade,uf,federacao)
@@ -161,17 +157,10 @@ CREATE TABLE doacao_pj(
 );
 
 
-INSERT INTO processo_judicial(doc_reu, procedencia, dt_termino) VALUES ('2', 'Culpado(a)', '2017-03-03');
-
-
-
-
-
-
-
--- DROP TABLE IF EXISTS individuo CASCADE;
--- DROP TABLE IF EXISTS processo_judicial CASCADE;
--- DROP TABLE IF EXISTS partido CASCADE;
--- DROP TABLE IF EXISTS cargo CASCADE;
--- DROP TABLE IF EXISTS candidatura CASCADE;
--- DROP TABLE IF EXISTS doacao_pf CASCADE;
+--DROP TABLE IF EXISTS individuo CASCADE;
+--DROP TABLE IF EXISTS processo_judicial CASCADE;
+--DROP TABLE IF EXISTS partido CASCADE;
+--DROP TABLE IF EXISTS cargo CASCADE;
+--DROP TABLE IF EXISTS equipe_apoio CASCADE;
+--DROP TABLE IF EXISTS candidatura CASCADE;
+--DROP TABLE IF EXISTS doacao_pf CASCADE;
